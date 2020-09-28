@@ -12,9 +12,9 @@ function print_symbol () {
     echo "$line"
 }
 
-echo "This is tetris game."
+echo "This is a game."
 
-while read -p "Start playing to press any key. To quit, press Ctrl+D." line; do
+while read -p "Press any key to start. To quit, press Ctrl+D." line; do
     x=10
     y=20
     is_missile_flying=0
