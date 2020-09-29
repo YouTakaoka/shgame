@@ -4,8 +4,8 @@ CHARACTER="(^-^)"
 MISSILE_SYMBOL="!"
 ENEMY_SYMBOL="X"
 EMPTY="0"
-ENEMY_ROWS=3
-ENEMY_COLS=20
+ENEMY_ROWS=2
+ENEMY_COLS=10
 ENEMY_FALL_INTERVAL=20
 INITIAL_X=10
 INITIAL_Y=20
@@ -29,19 +29,6 @@ function substitute () {
     echo $s
 }
 
-# srch <array> <element>
-function srch () {
-    j=1
-    for i in $1; do
-        if [ "$i" = "$2" ]; then
-            echo $j
-            return 0
-        fi
-        j=$(( $j + 1 ))
-    done
-    echo 0
-}
-
 echo "This is a game."
 
 while read -p "Press any key to start. To quit, press Ctrl+D." line; do
@@ -63,6 +50,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
     cnt=0
     enemy_cnt=0
     gameover=false
+    point=0
     while true; do
         # Catch key input
         read -n 1 -t 0.001 c
@@ -106,6 +94,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
                 is_missile_flying=false
                 enemy_line=`substitute $enemy_line $x_missile "$EMPTY"`
                 enemies[$i]=$enemy_line
+                point=$(( $point + 1 ))
             fi
             
             # Enemies vs player
@@ -117,7 +106,12 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         clear
 
         if $gameover; then
-            echo "Game over."
+            echo "Game over. You got $point point."
+            break
+        fi
+
+        if [ $point -ge $(( $ENEMY_ROWS * $ENEMY_COLS )) ]; then
+            echo "Clear!"
             break
         fi
 
@@ -134,6 +128,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
                 echo ""
             fi
         done
+        echo $point
        
         sleep 0.1
 
