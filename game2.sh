@@ -62,6 +62,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
     done
     cnt=0
     enemy_cnt=0
+    gameover=false
     while true; do
         # Catch key input
         read -n 1 -t 0.001 c
@@ -98,14 +99,27 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         # Contact detection
         for i in `seq 0 $(( $ENEMY_ROWS - 1 ))`; do
             enemy_line=${enemies[$i]}
-            if [ $is_missile_flying = true -a $y_missile = $(( $y_enemy + $i )) -a "${enemy_line:$x_missile:1}" = "$ENEMY_SYMBOL" ]; then
+            j=$(( $y_enemy + $i ))
+
+            # Missile vs enemies
+            if [ $is_missile_flying = true -a $y_missile = $j -a "${enemy_line:$x_missile:1}" = "$ENEMY_SYMBOL" ]; then
                 is_missile_flying=false
                 enemy_line=`substitute $enemy_line $x_missile "$EMPTY"`
                 enemies[$i]=$enemy_line
             fi
+            
+            # Enemies vs player
+            if [ $j = $y -a `echo $enemy_line | grep $ENEMY_SYMBOL` ]; then
+                gameover=true
+            fi
         done
 
         clear
+
+        if $gameover; then
+            echo "Game over."
+            break
+        fi
 
         #Draw characters
         for i in `seq 1 $y`; do
