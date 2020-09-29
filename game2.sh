@@ -97,15 +97,19 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         fi
 
         # Contact detection
+        enemy_offset=""
+        for i in `seq 1 $x_enemy`; do
+            enemy_offset="0$enemy_offset"
+        done
         for i in `seq 0 $(( $ENEMY_ROWS - 1 ))`; do
-            enemy_line=${enemies[$i]}
+            enemy_line="$enemy_offset${enemies[$i]}"
             j=$(( $y_enemy + $i ))
 
             # Missile vs enemies
             if [ $is_missile_flying = true -a $y_missile = $j -a "${enemy_line:$x_missile:1}" = "$ENEMY_SYMBOL" ]; then
                 is_missile_flying=false
                 enemy_line=`substitute $enemy_line $x_missile "$EMPTY"`
-                enemies[$i]=$enemy_line
+                enemies[$i]=${enemy_line:$x_enemy}
                 point=$(( $point + 1 ))
             fi
             
@@ -128,10 +132,6 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         fi
 
         #Draw characters
-        enemy_offset=""
-        for i in `seq 1 $x_enemy`; do
-            enemy_offset="0$enemy_offset"
-        done
         for i in `seq 1 $y`; do
             if [ $i = $y ]; then
                 print_symbol $CHARACTER $x
