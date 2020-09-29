@@ -6,6 +6,7 @@ ENEMY_SYMBOL="X"
 EMPTY="0"
 ENEMY_ROWS=3
 ENEMY_COLS=20
+ENEMY_FALL_INTERVAL=20
 INITIAL_X=10
 INITIAL_Y=20
 
@@ -50,7 +51,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
     x_missile=0
     y_missile=0
     declare -a enemies=()
-    declare -a y_enemies=(`seq 1 $ENEMY_ROWS`)
+    y_enemy=1
     
     enemy_line=""
     for i in `seq 1 $ENEMY_COLS`; do
@@ -60,6 +61,7 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         enemies+=( $enemy_line )
     done
     cnt=0
+    enemy_cnt=0
     while true; do
         # Catch key input
         read -n 1 -t 0.001 c
@@ -87,16 +89,19 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
             fi
         fi
 
+        # Move enemies
+        if [ $enemy_cnt -ge $ENEMY_FALL_INTERVAL ]; then
+            y_enemy=$(( $y_enemy + 1 ))
+            enemy_cnt=0
+        fi
+
         # Contact detection
-        for i in `seq 1 $ENEMY_ROWS`; do
-            j=$(( $i - 1 ))
-            mx=$x_missile
-            #y_enemies[$j]=$(( ${y_enemies[$j]} + 1 ))
-            enemy_line=${enemies[$j]}
-            if [ $y_missile = ${y_enemies[$j]} -a "${enemy_line:$mx:1}" = "$ENEMY_SYMBOL" ]; then
+        for i in `seq 0 $(( $ENEMY_ROWS - 1 ))`; do
+            enemy_line=${enemies[$i]}
+            if [ $is_missile_flying = true -a $y_missile = $(( $y_enemy + $i )) -a "${enemy_line:$x_missile:1}" = "$ENEMY_SYMBOL" ]; then
                 is_missile_flying=false
-                enemy_line=`substitute $enemy_line $mx "$EMPTY"`
-                enemies[$j]=$enemy_line
+                enemy_line=`substitute $enemy_line $x_missile "$EMPTY"`
+                enemies[$i]=$enemy_line
             fi
         done
 
@@ -104,11 +109,10 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
 
         #Draw characters
         for i in `seq 1 $y`; do
-
             if [ $i = $y ]; then
                 print_symbol $CHARACTER $x
-            elif [ $i -ge ${y_enemies[0]} -a $i -le ${y_enemies[$(( $ENEMY_ROWS - 1 ))]} ]; then
-                j=$(( $i - ${y_enemies[0]} ))
+            elif [ $i -ge $y_enemy -a $i -lt $(( $y_enemy + $ENEMY_ROWS )) ]; then
+                j=$(( $i - $y_enemy ))
                 echo ${enemies[$j]} | sed -e 's/0/ /g'
             elif [ $is_missile_flying = true -a $i = $y_missile ]; then
                 print_symbol $MISSILE_SYMBOL $x_missile
@@ -116,8 +120,10 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
                 echo ""
             fi
         done
-
+       
         sleep 0.1
+
+        enemy_cnt=$(( $enemy_cnt + 1 ))
         
         # cnt=$(( $cnt + 1 ))
         # if [ $cnt -gt 10 ]; then
@@ -125,21 +131,4 @@ while read -p "Press any key to start. To quit, press Ctrl+D." line; do
         # fi
     done
 done
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
